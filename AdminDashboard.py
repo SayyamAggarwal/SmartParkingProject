@@ -14,7 +14,8 @@ import Add_PlazaPrice
 import View_PlazaPrice
 import View_Entry
 import View_transaction
-import Recognise
+# import Recognise 
+from Recognise import Window
 class Main:
     def __init__(self,adminInfo):
 
@@ -23,6 +24,8 @@ class Main:
         self.root = Tk()
         self.root.state('zoomed')
         self.root.title('---------')
+        self.admindetail = adminInfo
+        print(self.admindetail)
 
         self.mainMenu = Menu(self.root)
         self.root.configure(menu=self.mainMenu)
@@ -68,6 +71,10 @@ class Main:
         self.paymentMenu.add_command(label=' Online Transaction', command=View_transaction.Main)
         self.paymentMenu.add_command(label=' Cash payment', command=View_Entry.Main)
 
+        self.recognizeSubmenu = Menu(self.mainMenu, tearoff=0)
+        self.mainMenu.add_cascade(label='Recognize', menu=self.recognizeSubmenu)
+        self.recognizeSubmenu.add_command(label='Recognize Number Plate', command=lambda: Window(self.admindetail[0]))
+
         self.font = ('', 14, 'bold')
         self.maincolor = '#462521'
         self.seccolor = '#006baf'
@@ -89,15 +96,17 @@ class Main:
         c.pack(fill='both', expand=True)
        # c.create_image(0, 0, image=bg, anchor=NW)
 
-        self.btn = Button(self.root, text='Recognise', font=self.font, command=Recognise.Window, width=10,
-                          height=2, bg='#c7a43a',
-                          foreground=self.textcolor, relief=RAISED, highlightcolor="white",
-                          highlightthickness=3)
-        btn = c.create_window(100, 80, anchor=NW, window=self.btn)
+        # self.btn = Button(self.root, text='Recognise', 
+        #                   font=self.font, command=Window(self.toll_id),
+        #                    width=10,
+        #                   height=2, bg='#c7a43a',
+        #                   foreground=self.textcolor, relief=RAISED, highlightcolor="white",
+        #                   highlightthickness=3)
+        # btn = c.create_window(100, 80, anchor=NW, window=self.btn)
 
         self.root.mainloop()
 
 
 adminInfo = [1,'ANIKET MAHAJAN','mahajananiket96@gmail.com']
 
-#object=Main(adminInfo)
+# object=Main(adminInfo)

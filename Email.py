@@ -3,6 +3,7 @@ from email.message import EmailMessage
 
 
 def sendEmail(to,message,subject):
+    print("inside email")
     try:
         msg=EmailMessage()
         msg.set_content(message)
@@ -11,7 +12,7 @@ def sendEmail(to,message,subject):
         msg['From']='vmm.testing.email2@gmail.com'
         server=smtplib.SMTP('smtp.gmail.com',587)
         server.starttls()
-        server.login('vmm.testing.email2@gmail.com','tirllvbbhctznive')
+        server.login('vmm.testing.email2@gmail.com',password='tirllvbbhctznive')
         server.send_message(msg)
         print('Mail Sent')
         server.quit()

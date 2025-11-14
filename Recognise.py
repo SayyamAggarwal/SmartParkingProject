@@ -6,15 +6,16 @@ from tkinter.filedialog import askopenfilename
 import cv2
 from PIL import ImageTk, Image
 from datetime import datetime
-
+import numpy as np
+import easyocr
 
 from Email import sendEmail
 import Add_Vehicle
 
 
 class Window:
-    def __init__(self):
-        #toll_id =tollId
+    def __init__(self,tollId):
+        self.toll_id = tollId[0]
         self.root = Toplevel()
         self.root.title("Smart parking || Pay Parking Price")
         self.root.state("zoomed")
@@ -90,7 +91,7 @@ class Window:
         self.l6.grid(row=7, column=0, pady=10, padx=10,sticky='w')
         self.t6 = Entry(self.frame1, font=self.font, width=32,readonlybackground=self.seccolor,fg=self.textcolor)
         self.t6.grid(row=7, column=1, padx=10, pady=10)
-        #self.t6.insert(0,toll_id)
+        self.t6.insert(0,self.toll_id)
         self.t6.configure(state='readonly')
 
         self.b1 = Button(self.frame1, text='Submit', font=self.font, width=10, command=self.insert,fg=self.textcolor,bg=self.seccolor)
@@ -110,6 +111,10 @@ class Window:
         self.ml = Label(self.frame3, text="Video Capture", font=('', 20, 'bold'), fg=self.seccolor, bg='white',
                         anchor='center')
         self.ml.grid(row=0, column=0)
+
+    # Default camera display size (pixels). Change these to resize the camera window.
+        self.cam_width = 400
+        self.cam_height = 240
 
         self.frame4 = Frame(self.frame2, width=int(self.frame2.winfo_screenwidth()) / 3,
                             height=int(self.frame2.winfo_screenheight()))
@@ -149,8 +154,8 @@ class Window:
         plates = cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=7)
         print('Number of detected license plates:', len(plates))
 
-        # Initialize EasyOCR reader
-        reader = easyOCR.Reader(['en'])
+        # Initialize easyocr reader
+        reader = easyocr.Reader(['en'])
         kernel = np.ones((3, 3), np.uint8)
         plate_text = ''
 
@@ -183,7 +188,11 @@ class Window:
         self.entry.insert(0, plate_text)
         cv2.imshow('plate', img)
         cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        try:
+            cv2.destroyAllWindows()
+        except:
+            pass
+
         # plt.imshow(img)
         # plt.show()
         # cv2.destroyAllWindows()
@@ -196,14 +205,22 @@ class Window:
     def show_frames(self):
         flag, self.img_frame = self.video.read()
         if flag is True:
+            # Convert BGR (OpenCV) to RGB (PIL/Tk)
             self.img_frame = cv2.cvtColor(self.img_frame, cv2.COLOR_BGR2RGB)
 
-            image = Image.fromarray(self.img_frame)
+            # Resize frame to target camera display size (keep aspect if you prefer by calculating dims)
+            try:
+                frame_resized = cv2.resize(self.img_frame, (int(self.cam_width), int(self.cam_height)))
+            except Exception:
+                # If resize fails for any reason, fall back to original frame
+                frame_resized = self.img_frame
+
+            image = Image.fromarray(frame_resized)
             imageTk = ImageTk.PhotoImage(image)
 
             self.ml.configure(image=imageTk)
             self.ml.image = imageTk
-            self.ml.after(20, self.show_frames)
+            self.ml.after(5, self.show_frames)
 
     def capture(self):
 
@@ -219,7 +236,7 @@ class Window:
         plates = cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=7)
         print('Number of detected license plates:', len(plates))
 
-        # Initialize EasyOCR reader
+        # Initialize easyocr reader
         reader = easyocr.Reader(['en'])
         kernel = np.ones((3, 3), np.uint8)
         plate_text = ''
@@ -306,7 +323,7 @@ class Window:
         #self.t6.insert(0, res[0][0])
         admin_id = self.t6.get()
         if type == 'Cash':
-            q = "insert into entry values(null,'" + vehicle_number + "','" + date + "','" + time + "','" + vehicle_id + "','" + admin_id + "','" + amount +"')"
+            q = "insert into entry values(null,'" + vehicle_number + "','" + date + "','" + time + "','" + vehicle_id + "','" +admin_id+ "','" + amount +"')"
             self.cr.execute(q)
             self.conn.commit()
             self.emailRemark(admin_id,vehicle_number)
@@ -364,6 +381,7 @@ class Window:
         subject = "Toll Payment Report"
 
         x = sendEmail(to=res[0][2], message=message, subject=subject)
+        print(x)
         if x:
             msg.showinfo("Sent", "Vehicle Identification mail has been sent!!",parent=self.root)
         else:
@@ -371,4 +389,4 @@ class Window:
 
 
 if __name__ == "__main__":
-    Window()
+    Window(tollId=1)

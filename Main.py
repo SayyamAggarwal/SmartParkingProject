@@ -13,6 +13,8 @@ class Main:
         self.maincolor = '#462521'
         self.seccolor = '#006baf'
         self.textcolor = 'white'
+        print("Hello inside main")
+        
 
         self.root.configure(bg=self.maincolor)
 
